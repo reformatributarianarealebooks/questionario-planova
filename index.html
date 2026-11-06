@@ -523,9 +523,13 @@ async function post(params) {
     try {
       const res = await fetch(SCRIPT_URL, { method: 'POST', body });
       const j = await res.json();
-      if (!j.ok) throw new Error(j.erro || 'falha no servidor');
+      if (!j.ok) {
+        const err = new Error(j.erro || 'falha no servidor');
+        if (j.erro === 'ação desconhecida') { err.semRetry = true; throw err; }
+        throw err;
+      }
       return j;
-    } catch (e) { lastErr = e; await new Promise(r => setTimeout(r, 1500 * (i + 1))); }
+    } catch (e) { if (e.semRetry) throw e; lastErr = e; await new Promise(r => setTimeout(r, 1500 * (i + 1))); }
   }
   throw lastErr;
 }
@@ -550,15 +554,53 @@ async function submit() {
   dlg.addEventListener('cancel', blockEsc);
   try {
     if (!token) token = (await post({ acao: 'iniciar', nome: r.nome })).token;
-    for (let i = 0; i < pending.length; i++) {
-      const { f, q } = pending[i];
-      msg(`Documento ${i + 1} de ${pending.length}: ${f.name}`);
-      const dados = await toBase64(f.file);
-      await post({ acao: 'arquivo', token, pergunta: q.folder, nome: f.name, tipo: f.type, dados });
-      f.done = true; renderFiles(q.num);
-      sentBytes += f.size;
+    // Documentos leves vão em lotes (vários por envio); os pesados, sozinhos. Até 4 envios simultâneos.
+    const LOTE_BYTES = 6 * 1024 * 1024, LOTE_QTD = 25, SIMULTANEOS = 4;
+    const lotes = [];
+    let atual = [], atualBytes = 0;
+    pending.forEach(x => {
+      if (x.f.size > LOTE_BYTES) { lotes.push([x]); return; }
+      if (atual.length && (atualBytes + x.f.size > LOTE_BYTES || atual.length >= LOTE_QTD)) { lotes.push(atual); atual = []; atualBytes = 0; }
+      atual.push(x); atualBytes += x.f.size;
+    });
+    if (atual.length) lotes.push(atual);
+
+    let enviados = 0;
+    const marcar = itens => {
+      itens.forEach(({ f, q }) => { f.done = true; sentBytes += f.size; enviados++; renderFiles(q.num); });
       bar().style.width = Math.round(sentBytes / totalBytes * 90) + '%';
+      msg(`Documentos enviados: ${enviados} de ${pending.length}`);
+    };
+    const umPorUm = async itens => {
+      for (const x of itens) {
+        await post({ acao: 'arquivo', token, pergunta: x.q.folder, nome: x.f.name, tipo: x.f.type, dados: await toBase64(x.f.file) });
+        marcar([x]);
+      }
+    };
+    let aceitaLote = true;
+    const enviarLote = async itens => {
+      if (itens.length === 1 || !aceitaLote) return umPorUm(itens);
+      const arquivos = [];
+      for (const x of itens) arquivos.push({ pergunta: x.q.folder, nome: x.f.name, tipo: x.f.type, dados: await toBase64(x.f.file) });
+      try {
+        await post({ acao: 'lote', token, arquivos: JSON.stringify(arquivos) });
+        marcar(itens);
+      } catch (e) {
+        if (!e.semRetry) throw e;
+        aceitaLote = false; // script antigo, sem a ação "lote"
+        await umPorUm(itens);
+      }
+    };
+    msg(`Enviando ${pending.length} documento${pending.length === 1 ? '' : 's'}…`);
+    // O primeiro lote vai sozinho para descobrir se o script aceita lotes; depois, em paralelo.
+    if (lotes.length) await enviarLote(lotes.shift());
+    if (!aceitaLote) {
+      const soltos = lotes.flat().map(x => [x]);
+      lotes.length = 0; lotes.push(...soltos);
     }
+    await Promise.all(Array.from({ length: Math.min(SIMULTANEOS, lotes.length) }, async () => {
+      while (lotes.length) await enviarLote(lotes.shift());
+    }));
     msg('Finalizando e enviando o e-mail…');
     const payload = {
       respondente: r,
