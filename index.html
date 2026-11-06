@@ -115,6 +115,9 @@ textarea { min-height: 112px; resize: vertical; line-height: 1.5; }
 .nd { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; }
 .nd input { width: 18px; height: 18px; accent-color: var(--navy); margin: 0; }
 
+.mail-note { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
+.mail-note a { color: var(--red-ink); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.mail-note a:hover { text-decoration: underline; }
 .note { margin-top: 40px; border-left: 3px solid var(--red); background: var(--paper); padding: 18px 22px; font-size: 15px; }
 .note b { color: var(--ink); }
 .consent { display: flex; gap: 10px; margin-top: 18px; font-size: 14px; align-items: flex-start; }
@@ -382,6 +385,7 @@ function render() {
           </label>
           <ul class="files" id="f${num}"></ul>
           <label class="nd"><input type="checkbox" data-nd="${num}"> Informação não disponível no momento</label>
+          <p class="mail-note">Se o arquivo a ser anexado for muito grande, ele pode ser enviado diretamente à nossa equipe pelo e-mail <a href="mailto:tributario@venturalaw.com.br?subject=${encodeURIComponent('Questionário Planova – Pergunta ' + num)}">tributario@venturalaw.com.br</a>. Basta indicar no assunto o número da pergunta.</p>
         </div>
       </article>`).join('')}
   `).join('');
@@ -424,7 +428,7 @@ function addFiles(num, fileList) {
     idb.put({ v: VERSAO, id: rec.id, q: num, name: rec.name, size: rec.size, type: rec.type, blob: file });
   }
   renderFiles(num); refresh();
-  if (tooBig.length) alert('Estes arquivos passam de ' + MAX_MB + ' MB e não foram anexados:\n\n' + tooBig.join('\n') + '\n\nDivida o arquivo ou compacte-o (ZIP) e anexe de novo.');
+  if (tooBig.length) alert('Estes arquivos passam de ' + MAX_MB + ' MB e não foram anexados:\n\n' + tooBig.join('\n') + '\n\nCompacte o arquivo (ZIP) e anexe de novo, ou envie-o diretamente para tributario@venturalaw.com.br, indicando no assunto o número da pergunta.');
 }
 
 /* ---------- eventos ---------- */
