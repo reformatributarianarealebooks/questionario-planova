@@ -593,7 +593,6 @@ async function submit() {
       const zip = new JSZip();
       const usados = {};
       pending.forEach(({ f, q }) => zip.file(q.folder + '/' + nomeUnico(f.name, usados[q.folder] = usados[q.folder] || {}), f.file, { createFolders: false }));
-      zip.file('Respostas - Questionário Planova.html', relatorioHtml(r), { createFolders: false });
       const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
         m => { bar().style.width = Math.round(m.percent * 0.3) + '%'; });
       if (blob.size <= MAX_ZIP_MB * 1024 * 1024) {
