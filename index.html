@@ -180,7 +180,7 @@ footer .mini .sep { width: 1px; height: 22px; background: rgba(255,255,255,.3); 
     </div>
     <div class="eyebrow">Questionário preliminar</div>
     <h1>Mapeamento de impactos da <span class="r">Reforma Tributária</span></h1>
-    <p class="hero-lede">São 25 perguntas, divididas em quatro blocos. Em cada uma, você pode escrever a resposta, anexar documentos, ou fazer as duas coisas.</p>
+    <p class="hero-lede">São 26 perguntas, divididas em quatro blocos. Em cada uma, você pode escrever a resposta, anexar documentos, ou fazer as duas coisas.</p>
     <div class="how">
       <div><b>Anexe à vontade</b>Planilhas, contratos, relatórios dos sistemas, notas fiscais e XMLs, em qualquer pergunta.</div>
       <div><b>Pode pausar</b>O que você digita e anexa fica guardado neste navegador. Dá para voltar depois e continuar.</div>
@@ -243,7 +243,7 @@ footer .mini .sep { width: 1px; height: 22px; background: rgba(255,255,255,.3); 
 <div class="bar" role="region" aria-label="Progresso e envio">
   <div class="wrap">
     <div class="prog">
-      <div class="lbl"><span><b id="cnt">0</b> de 25 respondidas</span><span class="saved" id="saved"></span></div>
+      <div class="lbl"><span><b id="cnt">0</b> de 26 respondidas</span><span class="saved" id="saved"></span></div>
       <div class="track"><i id="track"></i></div>
     </div>
     <button class="btn btn-red" id="send" type="button">Enviar</button>
@@ -269,7 +269,7 @@ const SECTIONS = [
     [3, 'Atividades das empresas', 'Quais são as principais atividades desenvolvidas pelas empresas do grupo? A atuação se restringe à construção civil ou também abrange locação de equipamentos, serviços de engenharia, fornecimento de materiais, entre outras atividades?'],
     [4, 'Modalidades de contratação', 'Quais são as principais modalidades de contratação e estruturas operacionais utilizadas (EPC, empreitada global, subempreitada, consórcios, SPEs etc.)?'],
     [5, 'Importação e exportação', 'As empresas realizam importação de bens, equipamentos ou serviços? Prestam serviços para clientes localizados no exterior (exportação de serviços)?'],
-    [6, 'Administração Pública e licitações', 'As empresas celebram contratos com a Administração Pública? Participam de licitações?']
+    [6, 'Administração Pública e licitações', 'As empresas celebram contratos com a Administração Pública? Participam de licitações? Em caso positivo, favor citar exemplos e, se possível, juntar a respectiva documentação.']
   ]},
   { n: 2, title: 'Contratos, fornecedores e operações', qs: [
     [7, 'Contratos de venda - 5 principais', 'Favor disponibilizar os **5 principais contratos de venda/prestação de serviços**, considerando os de maior valor, incluindo eventuais aditivos.'],
@@ -287,20 +287,22 @@ const SECTIONS = [
     [17, 'Municípios de emissão de NFS-e', 'As notas fiscais de prestação de serviços são emitidas exclusivamente no Município de Barueri? Caso contrário, em quais outros Municípios ocorre a emissão?'],
     [18, 'Créditos de PIS-Cofins', 'Já foi realizada alguma revisão ou mapeamento dos créditos de PIS/Cofins? Em caso positivo, quais foram os principais resultados e quais tipos de despesas/aquisições geram créditos atualmente?'],
     [19, 'Saldos credores acumulados', 'Já foi realizado levantamento dos saldos credores acumulados de tributos (PIS/Cofins, ICMS e outros)? Existem créditos tributários relevantes ainda não aproveitados ou pendentes de recuperação?'],
-    [20, 'Benefícios fiscais e regimes especiais', 'A empresa possui benefícios fiscais, regimes especiais ou tratamentos tributários diferenciados aplicáveis às suas operações (ex.: REIDI)?']
+    [20, 'Benefícios fiscais e regimes especiais', 'A empresa possui benefícios fiscais, regimes especiais ou tratamentos tributários diferenciados aplicáveis às suas operações (ex.: REIDI)?'],
+    [21, 'Estoques e estoque de abertura', 'As empresas possuem estoques de bens e materiais? Já foi realizado ou está previsto o levantamento do estoque de abertura (31/12/2026), visando avaliar a possibilidade de aproveitamento de créditos presumidos de CBS? Em caso positivo, favor informar se existem controles de quantidades, valores, documentação fiscal de aquisição e identificação dos itens.']
   ]},
   { n: 4, title: 'Sistemas, processos e adequação à Reforma Tributária', qs: [
-    [21, 'Sistemas (ERP e fiscais)', 'Quais sistemas são atualmente utilizados para gestão empresarial (ERP), emissão de notas fiscais, escrituração fiscal, contabilidade, compras e controle financeiro?'],
-    [22, 'Adaptação dos sistemas ao IBS-CBS', 'Já foi iniciado algum projeto de adaptação dos sistemas às exigências da Reforma Tributária (IBS/CBS)? Em caso positivo, qual o estágio atual, quais fornecedores de tecnologia estão envolvidos e quais são as principais pendências?'],
-    [23, 'Faturamento e pagamento das obras', 'Como são realizados atualmente os processos de faturamento e pagamento das obras? Há faturamento por medição, adiantamentos, retenções contratuais ou fornecimento direto de materiais pelos clientes?'],
-    [24, 'Estudos de impacto da Reforma', 'Já foi realizado algum estudo ou simulação dos impactos da Reforma Tributária sobre os custos, preços, aproveitamento de créditos ou fluxo de caixa das empresas?'],
-    [25, 'Outras preocupações', 'Existem outras preocupações, dificuldades operacionais ou pontos de atenção já identificados pelas equipes internas em relação à Reforma Tributária?']
+    [22, 'Sistemas (ERP e fiscais)', 'Quais sistemas são atualmente utilizados para gestão empresarial (ERP), emissão de notas fiscais, escrituração fiscal, contabilidade, compras e controle financeiro?'],
+    [23, 'Adaptação dos sistemas ao IBS-CBS', 'Já foi iniciado algum projeto de adaptação dos sistemas às exigências da Reforma Tributária (IBS/CBS)? Em caso positivo, qual o estágio atual, quais fornecedores de tecnologia estão envolvidos e quais são as principais pendências?'],
+    [24, 'Faturamento e pagamento das obras', 'Como são realizados atualmente os processos de faturamento e pagamento das obras? Há faturamento por medição, adiantamentos, retenções contratuais ou fornecimento direto de materiais pelos clientes?'],
+    [25, 'Estudos de impacto da Reforma', 'Já foi realizado algum estudo ou simulação dos impactos da Reforma Tributária sobre os custos, preços, aproveitamento de créditos ou fluxo de caixa das empresas?'],
+    [26, 'Outras preocupações', 'Existem outras preocupações, dificuldades operacionais ou pontos de atenção já identificados pelas equipes internas em relação à Reforma Tributária?']
   ]}
 ];
 const QUESTIONS = SECTIONS.flatMap(s => s.qs.map(([num, short, text]) => ({ num, short, text, folder: String(num).padStart(2, '0') + ' - ' + short })));
 
 /* ---------- estado ---------- */
 const STORE_KEY = 'planova-questionario-v1';
+const VERSAO = 2; // 2 = 26 perguntas (estoques entrou como 21)
 const state = { answers: {}, nd: {}, files: {} }; // files: { qnum: [{id, name, size, type, file, done}] }
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -349,7 +351,7 @@ const idb = (() => {
 function saveText() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
-      answers: state.answers, nd: state.nd,
+      v: VERSAO, answers: state.answers, nd: state.nd,
       r: { nome: $('#r-nome').value, cargo: $('#r-cargo').value, email: $('#r-email').value, tel: $('#r-tel').value },
       consent: $('#consent').checked
     }));
@@ -419,7 +421,7 @@ function addFiles(num, fileList) {
     if (!file.size) continue;
     const rec = { id: uid(), q: num, name: file.name, size: file.size, type: file.type || 'application/octet-stream', file, done: false };
     (state.files[num] = state.files[num] || []).push(rec);
-    idb.put({ id: rec.id, q: num, name: rec.name, size: rec.size, type: rec.type, blob: file });
+    idb.put({ v: VERSAO, id: rec.id, q: num, name: rec.name, size: rec.size, type: rec.type, blob: file });
   }
   renderFiles(num); refresh();
   if (tooBig.length) alert('Estes arquivos passam de ' + MAX_MB + ' MB e não foram anexados:\n\n' + tooBig.join('\n') + '\n\nDivida o arquivo ou compacte-o (ZIP) e anexe de novo.');
@@ -460,16 +462,24 @@ async function restore() {
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
     if (s) {
-      Object.assign(state.answers, s.answers || {});
-      Object.assign(state.nd, s.nd || {});
+      // Rascunhos da versão de 25 perguntas: as antigas 21–25 viraram 22–26.
+      const ajusta = obj => s.v === VERSAO ? (obj || {}) : Object.fromEntries(Object.entries(obj || {}).map(([n, v]) => [Number(n) >= 21 ? Number(n) + 1 : n, v]));
+      Object.assign(state.answers, ajusta(s.answers));
+      Object.assign(state.nd, ajusta(s.nd));
       Object.entries(state.answers).forEach(([n, v]) => { const el = $('#a' + n); if (el) el.value = v; });
       Object.entries(state.nd).forEach(([n, v]) => { const el = document.querySelector(`[data-nd="${n}"]`); if (el) el.checked = !!v; });
       if (s.r) { $('#r-nome').value = s.r.nome || ''; $('#r-cargo').value = s.r.cargo || ''; $('#r-email').value = s.r.email || ''; $('#r-tel').value = s.r.tel || ''; }
       $('#consent').checked = !!s.consent;
+      if (s.v !== VERSAO) saveText();
     }
   } catch (e) {}
   const recs = await idb.all();
   (recs || []).forEach(r => {
+    if (r.v !== VERSAO) {
+      if (Number(r.q) >= 21) r.q = String(Number(r.q) + 1);
+      r.v = VERSAO;
+      idb.put(r);
+    }
     (state.files[r.q] = state.files[r.q] || []).push({ id: r.id, q: r.q, name: r.name, size: r.size, type: r.type, file: r.blob, done: false });
   });
   QUESTIONS.forEach(q => renderFiles(q.num));
@@ -516,7 +526,7 @@ function review() {
   const all = QUESTIONS.flatMap(q => state.files[q.num] || []);
   const total = all.reduce((s, f) => s + f.size, 0);
   openDlg('Enviar questionário', 'Confira antes de enviar.',
-    `<p>As 25 perguntas estão respondidas${all.length ? `, com <b>${all.length} documento${all.length > 1 ? 's' : ''}</b> anexado${all.length > 1 ? 's' : ''} (${fmtSize(total)})` : ''}.</p>
+    `<p>As ${QUESTIONS.length} perguntas estão respondidas${all.length ? `, com <b>${all.length} documento${all.length > 1 ? 's' : ''}</b> anexado${all.length > 1 ? 's' : ''} (${fmtSize(total)})` : ''}.</p>
      <p style="margin-top:10px;font-size:14px;color:var(--muted)">O envio pode levar alguns minutos se houver muitos arquivos. Mantenha esta página aberta até a confirmação.</p>`,
     [['Revisar', 'btn-ghost', closeDlg], ['Enviar agora', 'btn-red', submit]]);
 }
