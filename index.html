@@ -256,6 +256,7 @@ footer .mini .sep { width: 1px; height: 22px; background: rgba(255,255,255,.3); 
   <div class="dlg-actions" id="dlg-actions"></div>
 </dialog>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 /* Endereço do App da Web do Google Apps Script que recebe os envios (ver apps-script-questionario-planova.gs). */
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzM9CxylNd5Ml51QM7Cf4k45Jc_VpQ7RFVwifx5kNJY865pHJrW9DBNNmLZY9ZCPDMc/exec';
@@ -322,6 +323,11 @@ const idb = (() => {
     return dbp;
   }
   async function tx(mode, fn) {
+    // Se o navegador bloquear ou travar o IndexedDB, desiste em 3 s sem atrapalhar o resto da página.
+    const limite = new Promise(res => setTimeout(() => res(null), 3000));
+    return Promise.race([limite, txReal(mode, fn)]);
+  }
+  async function txReal(mode, fn) {
     try {
       const db = await open();
       return await new Promise((res, rej) => {
@@ -515,7 +521,33 @@ function review() {
     [['Revisar', 'btn-ghost', closeDlg], ['Enviar agora', 'btn-red', submit]]);
 }
 
-let token = null;
+let token = null, zipEnviado = false, algumEnviadoSolto = false;
+const MAX_ZIP_MB = 20;
+function nomeUnico(nome, usados) {
+  let n = nome, i = 2;
+  const p = nome.lastIndexOf('.');
+  const base = p > 0 ? nome.slice(0, p) : nome, ext = p > 0 ? nome.slice(p) : '';
+  while (usados[n.toLowerCase()]) n = `${base} (${i++})${ext}`;
+  usados[n.toLowerCase()] = true;
+  return n;
+}
+function relatorioHtml(r) {
+  const itens = QUESTIONS.map(q => {
+    const txt = (state.answers[q.num] || '').trim();
+    const arqs = (state.files[q.num] || []).map(f => esc(f.name));
+    return `<div class="q"><h3>${q.num}. ${esc(q.text.replace(/\*\*/g, ''))}</h3>` +
+      (txt ? `<p>${esc(txt).replace(/\n/g, '<br>')}</p>` : '') +
+      (state.nd[q.num] ? '<p class="nd">Informação indicada como não disponível no momento.</p>' : '') +
+      (arqs.length ? `<p class="arq"><b>Documentos (pasta “${esc(q.folder)}”):</b><br>${arqs.join('<br>')}</p>` : '') + '</div>';
+  }).join('');
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Respostas - Questionário Planova</title><style>
+body{font-family:Arial,sans-serif;color:#23233f;max-width:820px;margin:32px auto;padding:0 16px;line-height:1.5}
+h1{color:#242442;margin:0}h2{color:#c81f2b;font-size:14px;text-transform:uppercase;letter-spacing:1px;margin-top:28px}
+.q{border-top:1px solid #e4e4ea;padding:12px 0}.q h3{font-size:15px;color:#242442;margin:0 0 6px}.nd{color:#c81f2b;font-style:italic}.arq{color:#555;font-size:13px}
+</style></head><body><h1>Planova · Questionário Preliminar</h1><p>Mapeamento de Impactos da Reforma Tributária — Ventura Advogados</p>
+<h2>Respondente</h2><p>${esc(r.nome)}${r.cargo ? ' — ' + esc(r.cargo) : ''}<br>${esc(r.email)}${r.telefone ? ' · ' + esc(r.telefone) : ''}<br>Enviado em ${esc(new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))}</p>
+<h2>Respostas</h2>${itens}</body></html>`;
+}
 async function post(params) {
   const body = new URLSearchParams(params);
   let lastErr;
@@ -554,8 +586,34 @@ async function submit() {
   dlg.addEventListener('cancel', blockEsc);
   try {
     if (!token) token = (await post({ acao: 'iniciar', nome: r.nome })).token;
-    // Documentos leves vão em lotes (vários por envio); os pesados, sozinhos. Até 4 envios simultâneos.
-    const LOTE_BYTES = 6 * 1024 * 1024, LOTE_QTD = 25, SIMULTANEOS = 4;
+    // Modo rápido: o navegador monta um único ZIP com uma pasta por pergunta e envia de uma vez.
+    let usarZip = !!window.JSZip && pending.length > 0 && !algumEnviadoSolto && !zipEnviado;
+    if (usarZip) {
+      msg(`Organizando ${pending.length} documento${pending.length === 1 ? '' : 's'} em pastas…`);
+      const zip = new JSZip();
+      const usados = {};
+      pending.forEach(({ f, q }) => zip.file(q.folder + '/' + nomeUnico(f.name, usados[q.folder] = usados[q.folder] || {}), f.file, { createFolders: false }));
+      zip.file('Respostas - Questionário Planova.html', relatorioHtml(r), { createFolders: false });
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
+        m => { bar().style.width = Math.round(m.percent * 0.3) + '%'; });
+      if (blob.size <= MAX_ZIP_MB * 1024 * 1024) {
+        msg(`Enviando os documentos (${fmtSize(blob.size)})…`);
+        bar().style.width = '35%';
+        const tick = setInterval(() => { const w = parseFloat(bar().style.width) || 35; if (w < 88) bar().style.width = (w + 1) + '%'; }, Math.max(250, blob.size / 40000));
+        try {
+          await post({ acao: 'zip', token, dados: await toBase64(blob) });
+          zipEnviado = true;
+          pending.forEach(({ f, q }) => { f.done = true; renderFiles(q.num); });
+        } catch (e) {
+          if (!e.semRetry) throw e;
+        } finally { clearInterval(tick); }
+      }
+      if (zipEnviado) pending.length = 0;
+    }
+
+    // Modo arquivo a arquivo (ZIP grande demais ou script antigo): lotes pequenos, vários ao mesmo tempo.
+    const LOTE_BYTES = 6 * 1024 * 1024, LOTE_QTD = 5, SIMULTANEOS = 6;
+    if (pending.length) algumEnviadoSolto = true;
     const lotes = [];
     let atual = [], atualBytes = 0;
     pending.forEach(x => {
